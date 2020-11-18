@@ -68,6 +68,7 @@ const handleNoteDelete = function (event) {
   event.stopPropagation();
 
   const note = $(this).parent(".list-group-item").data();
+  console.log('note:', note)
 
   if (activeNote.id === note.id) {
     activeNote = {};
@@ -103,6 +104,10 @@ const handleRenderSaveBtn = function () {
 
 // Render's the list of note titles
 const renderNoteList = (notes) => {
+
+  console.log('notes before [0]', notes);
+
+
   $noteList.empty();
 
   const noteListItems = [];
