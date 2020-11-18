@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 var express = require("express");
 var path = require("path");
 
@@ -9,6 +11,22 @@ var notes = [];
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+fs.readFile('db/db.json', 'utf8', function(error, data) {
+    
+    if(error) {
+        return console.log(error);
+    }
+
+    if(data) {
+        data = JSON.parse(data);
+        console.log('parsedData', data);
+        notes.push(data);
+        console.log('notes: ', notes);
+    }
+
+
+});
 
 // ROUTES
 // ============================================================================================
@@ -44,11 +62,21 @@ app.post("/api/notes", function(req, res) {
 
     var newNote = req.body;
 
+    newNote.id = notes.length + 1;
+
     newNote.routeName = newNote.id;
 
     console.log(newNote);
 
     notes.push(newNote);
+
+    notesStringify = JSON.stringify(notes);
+
+    fs.writeFile('db/db.json', notesStringify, function(err) {
+        if(err) {
+            return console.log(err);
+        }
+    });
 
     res.json(newNote);
 
