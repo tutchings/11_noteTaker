@@ -7,27 +7,31 @@ var app = express();
 var PORT = 3000;
 
 var notes = [];
-var count = 0;
 
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 
-fs.readFile('db/db.json', 'utf8', function(error, data) {
+const readDB = () => {
+
+    fs.readFile('db/db.json', 'utf8', function(error, data) {
     
-    if(error) {
-        return console.log(error);
-    }
+        if(error) {
+            return console.log(error);
+        }
+    
+        if(data) {
+            notes = JSON.parse(data);
+            // console.log('notes: ', notes);
+        }
+    
+    
+    });
+}
 
-    if(data) {
-        notes = JSON.parse(data);
-        count = notes.length;
-        console.log('notes: ', notes);
-    }
+readDB();
 
-
-});
 
 // ROUTES
 // ============================================================================================
@@ -40,12 +44,13 @@ app.get("/notes", function(req, res) {
 });
 
 app.get("/api/notes", function(req, res) {
+    readDB();
+    console.log('api notes: ', notes);
     return res.json(notes);
 });
 
 app.get("/api/notes/:id", function(req, res) {
 
-    console.log('req.params: ', req.params);
     var noteID = req.params.id;
     noteID = parseInt(noteID);
 
@@ -57,6 +62,7 @@ app.get("/api/notes/:id", function(req, res) {
     }
 
     return res.json(false);
+
 });
 
 app.delete('/api/notes/:id', function(req, res) {
@@ -80,7 +86,10 @@ app.delete('/api/notes/:id', function(req, res) {
         }
     }
 
-})
+    readDB();
+    console.log("notes: ", notes);
+
+});
 
 
 // Create New Note
@@ -88,13 +97,21 @@ app.post("/api/notes", function(req, res) {
 
     var newNote = req.body;
 
-    newNote.id = count + 1;
+    var idArray = notes.map(function (obj) {
+        return obj.id;
+    });
+    
+    if (idArray.length !== 0) {
+        var maxId = Math.max(...idArray);
+    } else {
+        var maxId = 0;
+    }
 
-    count = count + 1;
+    newNote.id = maxId + 1;
 
     newNote.routeName = newNote.id;
 
-    console.log(newNote);
+    // console.log(newNote);
 
     notes.push(newNote);
 
